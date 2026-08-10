@@ -1,0 +1,79 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  --bg-dark: #0f172a;
+  --bg-card: rgba(30, 41, 59, 0.7);
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  
+  --accent-primary: #a855f7; /* Purple */
+  --accent-secondary: #06b6d4; /* Cyan */
+  
+  --success: #10b981;
+  --danger: #ef4444;
+  --warning: #f59e0b;
+  
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  
+  --card-gradient: linear-gradient(145deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.9));
+  --btn-transparent: rgba(255, 255, 255, 0.1);
+  --btn-transparent-hover: rgba(255, 255, 255, 0.2);
+  
+  --border-radius: 16px;
+  --transition: all 0.3s ease;
+}
+
+body.light-mode {
+  --bg-dark: #f1f5f9;
+  --bg-card: rgba(255, 255, 255, 0.8);
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  
+  --accent-primary: #8b5cf6;
+  --accent-secondary: #0ea5e9;
+  
+  --glass-border: rgba(0, 0, 0, 0.1);
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+  
+  --card-gradient: linear-gradient(145deg, rgba(255, 255, 255, 1), rgba(241, 245, 249, 1));
+  --btn-transparent: rgba(0, 0, 0, 0.05);
+  --btn-transparent-hover: rgba(0, 0, 0, 0.1);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: var(--bg-dark);
+  color: var(--text-main);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  /* Cool gradient background */
+  background: radial-gradient(circle at 15% 50%, rgba(168, 85, 247, 0.15), transparent 25%),
+              radial-gradient(circle at 85% 30%, rgba(6, 182, 212, 0.15), transparent 25%),
+              var(--bg-dark);
+  background-attachment: fixed;
+}
+
+button {
+  cursor: pointer;
+  font-family: inherit;
+  border: none;
+  outline: none;
+  transition: var(--transition);
+}
+
+.glass-panel {
+  background: var(--bg-card);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--border-radius);
+  box-shadow: var(--glass-shadow);
+}
