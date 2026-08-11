@@ -1,10 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getAudioPath } from '../utils/audioUtils';
-import wordsData from '../data/words.json';
-
-const VOICES = ['Emel', 'Ahmet'];
-const CACHE_NAME = 'turk-audio-cache';
-const CHUNK_SIZE = 50; // Bir martada yuklanadigan ovozlar soni
+import { downloadAudioFiles } from '../utils/audioDownloaderLogic';
 
 export default function AudioDownloader() {
   const [isDownloaded, setIsDownloaded] = useState(false);
@@ -24,58 +19,18 @@ export default function AudioDownloader() {
     setIsDownloading(true);
     setProgress(0);
 
-    try {
-      const urlsToCache = [];
-      
-      // Barcha URL larni yig'ish
-      wordsData.forEach(w => {
-        const tr = w["Turkcha (Türkçe)"] || w["Turkish"];
-        if (tr) {
-          VOICES.forEach(voice => {
-            urlsToCache.push(getAudioPath(tr, voice));
-          });
-        }
-      });
+    const success = await downloadAudioFiles((prog) => {
+      setProgress(prog);
+    });
 
-      // Duplikatlarni olib tashlash
-      const uniqueUrls = [...new Set(urlsToCache)];
-      const total = uniqueUrls.length;
-      let downloaded = 0;
-
-      const cache = await caches.open(CACHE_NAME);
-
-      // Bo'lib-bo'lib yuklash (Chunking)
-      for (let i = 0; i < total; i += CHUNK_SIZE) {
-        const chunk = uniqueUrls.slice(i, i + CHUNK_SIZE);
-        
-        await Promise.all(chunk.map(async (url) => {
-          try {
-            // Avval keshda bormi tekshiramiz
-            const match = await cache.match(url);
-            if (!match) {
-              await cache.add(url);
-            }
-          } catch (err) {
-            console.error(`Failed to cache ${url}`, err);
-          }
-        }));
-
-        downloaded += chunk.length;
-        if (downloaded > total) downloaded = total;
-        setProgress(Math.round((downloaded / total) * 100));
-      }
-
-      // Yakunlash
-      localStorage.setItem('turk_vocab_audio_downloaded', 'true');
+    if (success) {
       setIsDownloaded(true);
       setTimeout(() => setShowPrompt(false), 2000);
-      
-    } catch (error) {
-      console.error("Yuklashda xatolik yuz berdi:", error);
+    } else {
       alert("Yuklashda xatolik yuz berdi. Iltimos internetingizni tekshirib qayta urinib ko'ring.");
-    } finally {
-      setIsDownloading(false);
     }
+    
+    setIsDownloading(false);
   };
 
   return (
