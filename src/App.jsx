@@ -17,6 +17,7 @@ import ReloadPrompt from './components/ReloadPrompt'
 import CrosswordMode from './components/CrosswordMode'
 import ScrambleMode from './components/ScrambleMode'
 import HangmanMode from './components/HangmanMode'
+import AudioDownloader from './components/AudioDownloader'
 import defaultWordsData from './data/words.json'
 import './App.css'
 
@@ -423,6 +424,9 @@ function App() {
           >
             📊 Statistika
           </button>
+          
+          <AudioDownloader />
+          
           <button 
             onClick={() => setIsDarkMode(!isDarkMode)}
             style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', justifyContent: 'center', alignItems: 'center', color: 'var(--text-main)', cursor: 'pointer', fontSize: '1.2rem' }}
