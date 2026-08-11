@@ -27,6 +27,13 @@ function App() {
   
   const [loadingData, setLoadingData] = useState(true);
   const [appSettings, setAppSettings] = useState({ maintenance: false, announcement: '' });
+  const [currentHash, setCurrentHash] = useState(window.location.hash);
+
+  useEffect(() => {
+    const handleHashChange = () => setCurrentHash(window.location.hash);
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
 
   useEffect(() => {
     // Global sozlamalarni tinglash
@@ -426,12 +433,13 @@ function App() {
   }
 
   // Maxfiy Admin Panel (Faqat admin uchun)
-  if (window.location.hash === '#maxfiy-admin') {
+  if (currentHash === '#maxfiy-admin') {
     // Agar user admin bo'lmasa, uni o'tkazib yubormaslik
     if (currentUser?.email === import.meta.env.VITE_ADMIN_EMAIL) {
-      return <AdminPanel onClose={() => window.location.hash = ''} />;
+      return <AdminPanel onClose={() => { window.location.hash = ''; setCurrentHash(''); }} />;
     } else {
       window.location.hash = ''; // Adashib kirgan bo'lsa tozalaymiz
+      if (currentHash !== '') setCurrentHash('');
     }
   }
 
