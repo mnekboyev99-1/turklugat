@@ -78,34 +78,34 @@ export default function AdminPanel({ onClose }) {
   }).length;
 
   if (loading) {
-    return <div className="app-container" style={{padding: '2rem'}}>Admin Panel yuklanmoqda...</div>;
+    return <div className="admin-panel-wrapper" style={{display: 'flex', justifyContent: 'center', alignItems: 'center'}}><h2>Admin Panel yuklanmoqda...</h2></div>;
   }
 
   return (
-    <div className="app-container" style={{ padding: '2rem', maxWidth: '1000px', margin: '0 auto', overflowY: 'auto', height: '100vh' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+    <div className="admin-panel-wrapper">
+      <div className="admin-header">
         <h1 style={{ color: 'var(--accent-primary)', margin: 0 }}>🛡️ Maxfiy Admin Panel</h1>
         <button className="btn" onClick={onClose}>Chiqish</button>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
-        <div className="glass-panel" style={{ textAlign: 'center', padding: '1.5rem' }}>
-          <h3 style={{ color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Jami o'quvchilar</h3>
-          <p style={{ fontSize: '2.5rem', fontWeight: 'bold', color: 'white', margin: 0 }}>{totalUsers}</p>
+      <div className="admin-stats-grid">
+        <div className="admin-stat-card">
+          <h3 className="admin-stat-title">Jami o'quvchilar</h3>
+          <p className="admin-stat-value" style={{ color: 'white' }}>{totalUsers}</p>
         </div>
-        <div className="glass-panel" style={{ textAlign: 'center', padding: '1.5rem' }}>
-          <h3 style={{ color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Hozir Onlayn</h3>
-          <p style={{ fontSize: '2.5rem', fontWeight: 'bold', color: 'var(--success)', margin: 0 }}>{onlineUsers}</p>
+        <div className="admin-stat-card">
+          <h3 className="admin-stat-title">Hozir Onlayn</h3>
+          <p className="admin-stat-value" style={{ color: 'var(--success)' }}>{onlineUsers}</p>
           <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>(Oxirgi 15 daqiqa)</span>
         </div>
-        <div className="glass-panel" style={{ textAlign: 'center', padding: '1.5rem' }}>
-          <h3 style={{ color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Bugungi faollar</h3>
-          <p style={{ fontSize: '2.5rem', fontWeight: 'bold', color: 'var(--warning)', margin: 0 }}>{todayActive}</p>
+        <div className="admin-stat-card">
+          <h3 className="admin-stat-title">Bugungi faollar</h3>
+          <p className="admin-stat-value" style={{ color: 'var(--warning)' }}>{todayActive}</p>
         </div>
       </div>
 
-      <div className="glass-panel" style={{ marginBottom: '2rem', padding: '1.5rem' }}>
-        <h2 style={{ marginBottom: '1rem', borderBottom: '1px solid var(--glass-border)', paddingBottom: '0.5rem' }}>⚙️ Dastur Sozlamalari</h2>
+      <div className="admin-section">
+        <h2>⚙️ Dastur Sozlamalari</h2>
         
         <div style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
@@ -115,9 +115,9 @@ export default function AdminPanel({ onClose }) {
               onChange={(e) => setMaintenance(e.target.checked)}
               style={{ width: '20px', height: '20px' }}
             />
-            <strong style={{ color: maintenance ? 'var(--danger)' : 'white' }}>Texnik ishlar (Maintenance Mode)</strong>
+            <strong style={{ color: maintenance ? 'var(--danger)' : 'white', fontSize: '1.1rem' }}>Texnik ishlar (Maintenance Mode)</strong>
           </label>
-          <span style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>- Odamlar kirolmaydi (Faqat sizdan tashqari)</span>
+          <span style={{ color: 'var(--text-muted)' }}>- Sayt vaqtincha yopiladi (Sizdan boshqalar kirolmaydi)</span>
         </div>
 
         <div style={{ marginBottom: '1.5rem' }}>
@@ -127,7 +127,7 @@ export default function AdminPanel({ onClose }) {
             value={announcement}
             onChange={(e) => setAnnouncement(e.target.value)}
             placeholder="Masalan: Ertaga soat 20:00 da yangilanish bo'ladi..."
-            style={{ width: '100%', padding: '0.8rem', borderRadius: '8px', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--glass-border)', color: 'white' }}
+            style={{ width: '100%', padding: '1rem', borderRadius: '12px', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--glass-border)', color: 'white', fontSize: '1rem' }}
           />
         </div>
 
@@ -135,13 +135,14 @@ export default function AdminPanel({ onClose }) {
           className="btn btn-know" 
           onClick={saveSettings}
           disabled={savingSettings}
+          style={{ width: 'auto', padding: '0.8rem 2rem' }}
         >
           {savingSettings ? 'Saqlanmoqda...' : '💾 Sozlamalarni Saqlash'}
         </button>
       </div>
 
-      <div className="glass-panel" style={{ padding: '1.5rem', overflowX: 'auto' }}>
-        <h2 style={{ marginBottom: '1rem', borderBottom: '1px solid var(--glass-border)', paddingBottom: '0.5rem' }}>👥 Foydalanuvchilar ({totalUsers} ta)</h2>
+      <div className="admin-section" style={{ overflowX: 'auto' }}>
+        <h2>👥 Foydalanuvchilar ({totalUsers} ta)</h2>
         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
           <thead>
             <tr style={{ borderBottom: '1px solid var(--glass-border)' }}>
