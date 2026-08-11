@@ -82,3 +82,64 @@
   height: 24px;
   margin-right: 12px;
 }
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.login-form input {
+  padding: 12px 15px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
+  font-size: 16px;
+  outline: none;
+  transition: all 0.3s;
+}
+
+.login-form input:focus {
+  border-color: #ff8e53;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.email-login-btn {
+  padding: 12px;
+  background: linear-gradient(135deg, #ff6b6b, #ff8e53);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.3s;
+}
+
+.email-login-btn:hover {
+  opacity: 0.9;
+}
+
+.email-login-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.toggle-auth {
+  margin-bottom: 15px;
+}
+
+.toggle-auth button {
+  background: none;
+  border: none;
+  color: #ff8e53;
+  font-size: 14px;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.toggle-auth button:hover {
+  color: #ff6b6b;
+}
