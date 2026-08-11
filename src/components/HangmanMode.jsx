@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getAudioPath } from '../utils/audioUtils';
+import { getAudioPath, playTurkishAudio } from '../utils/audioUtils';
 
 export default function HangmanMode({ wordData, onNext, selectedVoice, learningDirection }) {
   const [guessedLetters, setGuessedLetters] = useState([]);

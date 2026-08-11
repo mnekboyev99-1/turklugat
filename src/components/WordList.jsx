@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { getAudioPath } from '../utils/audioUtils';
+import { getAudioPath, playTurkishAudio } from '../utils/audioUtils';
 
 export default function WordList({ masterData, selectedVoice, units, unitCounts, favorites = [], toggleFavorite }) {
   const [searchQuery, setSearchQuery] = useState('');

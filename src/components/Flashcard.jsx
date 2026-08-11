@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getAudioPath } from '../utils/audioUtils';
+import { getAudioPath, playTurkishAudio } from '../utils/audioUtils';
 
 export default function Flashcard({ wordData, isFlipped, setIsFlipped, selectedVoice, learningDirection, isFavorite, toggleFavorite }) {
   if (!wordData) return null;
@@ -22,10 +22,7 @@ export default function Flashcard({ wordData, isFlipped, setIsFlipped, selectedV
     
     // Play Turkish audio by word slug
     if (turkishWord && selectedVoice) {
-      const localAudio = new Audio(getAudioPath(turkishWord, selectedVoice));
-      localAudio.play().catch(() => {
-        playFallbackAudio();
-      });
+      playTurkishAudio(turkishWord, selectedVoice);
     } else {
       playFallbackAudio();
     }

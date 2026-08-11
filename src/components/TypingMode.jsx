@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { getAudioPath } from '../utils/audioUtils';
+import { getAudioPath, playTurkishAudio } from '../utils/audioUtils';
 
 export default function TypingMode({ wordData, onNext, selectedVoice, learningDirection }) {
   const [inputValue, setInputValue] = useState('');

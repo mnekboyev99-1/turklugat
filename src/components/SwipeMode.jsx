@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, useAnimation } from 'framer-motion';
 import SuffixHighlighter from '../utils/SuffixHighlighter';
-import { getAudioPath } from '../utils/audioUtils';
+import { getAudioPath, playTurkishAudio } from '../utils/audioUtils';
 
 export default function SwipeMode({ wordData, onNext, selectedVoice, learningDirection }) {
   const controls = useAnimation();
