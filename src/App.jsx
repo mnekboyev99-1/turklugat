@@ -40,16 +40,16 @@ function App() {
   
   // Phase 6 Theme
   const [isDarkMode, setIsDarkMode] = useState(() => {
-    const savedTheme = localStorage.getItem('turk_vocab_theme');
+    const savedTheme = localStorage.getItem(`turk_vocab_${currentUser?.uid || 'guest'}_theme`);
     return savedTheme !== 'light';
   });
 
   const [favorites, setFavorites] = useState(() => {
-    return JSON.parse(localStorage.getItem('turk_vocab_favorites') || '[]');
+    return JSON.parse(localStorage.getItem(`turk_vocab_${currentUser?.uid || 'guest'}_favorites`) || '[]');
   });
 
   const [mistakes, setMistakes] = useState(() => {
-    return JSON.parse(localStorage.getItem('turk_vocab_mistakes') || '[]');
+    return JSON.parse(localStorage.getItem(`turk_vocab_${currentUser?.uid || 'guest'}_mistakes`) || '[]');
   });
 
   const toggleFavorite = (originalIndex) => {
@@ -57,7 +57,7 @@ function App() {
       const newFavs = prev.includes(originalIndex)
         ? prev.filter(i => i !== originalIndex)
         : [...prev, originalIndex];
-      localStorage.setItem('turk_vocab_favorites', JSON.stringify(newFavs));
+      localStorage.setItem(`turk_vocab_${currentUser?.uid || 'guest'}_favorites`, JSON.stringify(newFavs));
       return newFavs;
     });
   };
@@ -97,7 +97,7 @@ function App() {
     const msInDay = 24 * 60 * 60 * 1000;
     
     const wordsNeedingReview = wordsWithIndex.filter(w => {
-      const savedData = localStorage.getItem(`word_${w.originalIndex}`);
+      const savedData = localStorage.getItem(`turk_vocab_${currentUser?.uid || 'guest'}_word_${w.originalIndex}`);
       if (savedData) {
         try {
           const { knew, date } = JSON.parse(savedData);
@@ -136,12 +136,12 @@ function App() {
 
   useEffect(() => {
     // Load stats
-    const savedLearned = localStorage.getItem('turk_vocab_learned');
+    const savedLearned = localStorage.getItem(`turk_vocab_${currentUser?.uid || 'guest'}_learned`);
     if (savedLearned) setLearnedCount(parseInt(savedLearned, 10));
 
     // Daily Streak Logic
-    const lastActiveDate = localStorage.getItem('turk_vocab_last_active');
-    const savedStreak = parseInt(localStorage.getItem('turk_vocab_streak') || '0', 10);
+    const lastActiveDate = localStorage.getItem(`turk_vocab_${currentUser?.uid || 'guest'}_last_active`);
+    const savedStreak = parseInt(localStorage.getItem(`turk_vocab_${currentUser?.uid || 'guest'}_streak`) || '0', 10);
     const todayStr = new Date().toDateString();
     
     if (lastActiveDate) {
@@ -152,19 +152,19 @@ function App() {
         
         if (diffDays === 1) {
           setStreak(savedStreak + 1);
-          localStorage.setItem('turk_vocab_streak', (savedStreak + 1).toString());
+          localStorage.setItem(`turk_vocab_${currentUser?.uid || 'guest'}_streak`, (savedStreak + 1).toString());
         } else if (diffDays > 1) {
           setStreak(1);
-          localStorage.setItem('turk_vocab_streak', '1');
+          localStorage.setItem(`turk_vocab_${currentUser?.uid || 'guest'}_streak`, '1');
         }
-        localStorage.setItem('turk_vocab_last_active', todayStr);
+        localStorage.setItem(`turk_vocab_${currentUser?.uid || 'guest'}_last_active`, todayStr);
       } else {
         setStreak(savedStreak);
       }
     } else {
       setStreak(1);
-      localStorage.setItem('turk_vocab_streak', '1');
-      localStorage.setItem('turk_vocab_last_active', todayStr);
+      localStorage.setItem(`turk_vocab_${currentUser?.uid || 'guest'}_streak`, '1');
+      localStorage.setItem(`turk_vocab_${currentUser?.uid || 'guest'}_last_active`, todayStr);
     }
   }, []);
 
@@ -172,10 +172,10 @@ function App() {
     // Theme logic
     if (isDarkMode) {
       document.body.classList.remove('light-mode');
-      localStorage.setItem('turk_vocab_theme', 'dark');
+      localStorage.setItem(`turk_vocab_${currentUser?.uid || 'guest'}_theme`, 'dark');
     } else {
       document.body.classList.add('light-mode');
-      localStorage.setItem('turk_vocab_theme', 'light');
+      localStorage.setItem(`turk_vocab_${currentUser?.uid || 'guest'}_theme`, 'light');
     }
   }, [isDarkMode]);
 
@@ -185,23 +185,23 @@ function App() {
     if (knewWord) {
       const newCount = learnedCount + 1;
       setLearnedCount(newCount);
-      localStorage.setItem('turk_vocab_learned', newCount.toString());
+      localStorage.setItem(`turk_vocab_${currentUser?.uid || 'guest'}_learned`, newCount.toString());
       
       // SRS - remember they knew it
-      localStorage.setItem(`word_${currentWordIndex}`, JSON.stringify({ knew: true, date: Date.now() }));
+      localStorage.setItem(`turk_vocab_${currentUser?.uid || 'guest'}_word_${currentWordIndex}`, JSON.stringify({ knew: true, date: Date.now() }));
       
       // If they knew it, remove from mistakes if it was there
       if (mistakes.includes(currentWordIndex)) {
         const newMistakes = mistakes.filter(i => i !== currentWordIndex);
         setMistakes(newMistakes);
-        localStorage.setItem('turk_vocab_mistakes', JSON.stringify(newMistakes));
+        localStorage.setItem(`turk_vocab_${currentUser?.uid || 'guest'}_mistakes`, JSON.stringify(newMistakes));
       }
 
       // Daily history chart
       const todayStr = new Date().toDateString();
-      const historyData = JSON.parse(localStorage.getItem('turk_vocab_history') || '{}');
+      const historyData = JSON.parse(localStorage.getItem(`turk_vocab_${currentUser?.uid || 'guest'}_history`) || '{}');
       historyData[todayStr] = (historyData[todayStr] || 0) + 1;
-      localStorage.setItem('turk_vocab_history', JSON.stringify(historyData));
+      localStorage.setItem(`turk_vocab_${currentUser?.uid || 'guest'}_history`, JSON.stringify(historyData));
       
       setSessionScore(prev => prev + 1);
     } else {
@@ -209,7 +209,7 @@ function App() {
       if (!mistakes.includes(currentWordIndex)) {
         const newMistakes = [...mistakes, currentWordIndex];
         setMistakes(newMistakes);
-        localStorage.setItem('turk_vocab_mistakes', JSON.stringify(newMistakes));
+        localStorage.setItem(`turk_vocab_${currentUser?.uid || 'guest'}_mistakes`, JSON.stringify(newMistakes));
       }
     }
     
@@ -251,13 +251,13 @@ function App() {
     }
 
     if (selectedUnit === '⭐ Sevimlilar') {
-      localStorage.removeItem('turk_vocab_favorites');
+      localStorage.removeItem(`turk_vocab_${currentUser?.uid || 'guest'}_favorites`);
     } else if (selectedUnit === '❌ Xatolar') {
-      localStorage.removeItem('turk_vocab_mistakes');
+      localStorage.removeItem(`turk_vocab_${currentUser?.uid || 'guest'}_mistakes`);
     } else {
       masterData.forEach((w, index) => {
         if (w["Bo'lim (Unit)"] === selectedUnit) {
-          localStorage.removeItem(`word_${index}`);
+          localStorage.removeItem(`turk_vocab_${currentUser?.uid || 'guest'}_word_${index}`);
         }
       });
     }

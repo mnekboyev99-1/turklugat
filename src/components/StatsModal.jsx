@@ -11,7 +11,7 @@ export default function StatsModal({ onClose, totalLearned, streak }) {
 
   useEffect(() => {
     // Read daily history
-    const historyData = JSON.parse(localStorage.getItem('turk_vocab_history') || '{}');
+    const historyData = JSON.parse(localStorage.getItem(`turk_vocab_${currentUser?.uid || 'guest'}_history`) || '{}');
     
     // Generate last 7 days
     const chartData = [];
@@ -37,13 +37,13 @@ export default function StatsModal({ onClose, totalLearned, streak }) {
       return;
     }
     
-    localStorage.removeItem('turk_vocab_learned');
-    localStorage.removeItem('turk_vocab_streak');
-    localStorage.removeItem('turk_vocab_last_active');
-    localStorage.removeItem('turk_vocab_history');
+    localStorage.removeItem(`turk_vocab_${currentUser?.uid || 'guest'}_learned`);
+    localStorage.removeItem(`turk_vocab_${currentUser?.uid || 'guest'}_streak`);
+    localStorage.removeItem(`turk_vocab_${currentUser?.uid || 'guest'}_last_active`);
+    localStorage.removeItem(`turk_vocab_${currentUser?.uid || 'guest'}_history`);
     
     for (let i = 0; i < TOTAL_WORDS; i++) {
-      localStorage.removeItem(`word_${i}`);
+      localStorage.removeItem(`turk_vocab_${currentUser?.uid || 'guest'}_word_${i}`);
     }
     
     setConfirmReset(false);

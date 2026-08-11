@@ -42,12 +42,14 @@ export function AuthProvider({ children }) {
 
   // Guest Login
   function loginAsGuest() {
+    localStorage.setItem('turk_vocab_is_guest', 'true');
     setCurrentUser(guestUser);
   }
 
   // Logout
   function logout() {
     if (currentUser?.isGuest) {
+      localStorage.removeItem('turk_vocab_is_guest');
       setCurrentUser(null);
       return Promise.resolve();
     }
@@ -55,6 +57,13 @@ export function AuthProvider({ children }) {
   }
 
   useEffect(() => {
+    // If user was a guest, restore guest session instantly
+    if (localStorage.getItem('turk_vocab_is_guest') === 'true') {
+      setCurrentUser(guestUser);
+      setLoading(false);
+      return; // We skip Firebase auth check for guests to keep it fast
+    }
+
     // If not using Firebase (keys missing), this might fail, so we wrap it
     let unsubscribe = () => {};
     try {
@@ -74,7 +83,7 @@ export function AuthProvider({ children }) {
     }
     
     return unsubscribe;
-  }, [currentUser?.isGuest]);
+  }, []); // Remove dependency on currentUser?.isGuest to prevent re-running on guest logout/login in a way that messes up state
 
   const value = {
     currentUser,
