@@ -266,6 +266,10 @@ function App() {
     window.location.reload();
   };
 
+  if (!currentUser) {
+    return <LoginScreen />;
+  }
+
   if (words.length === 0) {
     return <div className="app-container">Yuklanmoqda... yoxud ushbu mavzuda so'z topilmadi.</div>;
   }
