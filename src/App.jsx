@@ -28,11 +28,22 @@ function App() {
 
   useEffect(() => {
     // Global sozlamalarni tinglash
-    const unsubscribe = onSnapshot(doc(db, 'settings', 'general'), (docSnap) => {
-      if (docSnap.exists()) {
-        setAppSettings(docSnap.data());
-      }
-    });
+    let unsubscribe = () => {};
+    try {
+      unsubscribe = onSnapshot(
+        doc(db, 'settings', 'general'), 
+        (docSnap) => {
+          if (docSnap.exists()) {
+            setAppSettings(docSnap.data());
+          }
+        },
+        (error) => {
+          console.warn("Settings read ignored (xavfsizlik qoidalari):", error.message);
+        }
+      );
+    } catch (e) {
+      console.warn("Snapshot setup failed:", e);
+    }
     return () => unsubscribe();
   }, []);
 
