@@ -84,18 +84,23 @@ function App() {
     localStorage.setItem(key, value);
     if (!currentUser || currentUser.isGuest) return;
     
-    const fieldMap = {
-      [`turk_vocab_${currentUser.uid}_favorites`]: { favorites: JSON.parse(value || '[]') },
-      [`turk_vocab_${currentUser.uid}_mistakes`]: { mistakes: JSON.parse(value || '[]') },
-      [`turk_vocab_${currentUser.uid}_learned`]: { learnedCount: parseInt(value || '0') },
-      [`turk_vocab_${currentUser.uid}_streak`]: { streak: parseInt(value || '0') },
-      [`turk_vocab_${currentUser.uid}_history`]: { history: JSON.parse(value || '{}') },
-      [`turk_vocab_${currentUser.uid}_last_active`]: { lastActive: value },
-      [`turk_vocab_${currentUser.uid}_theme`]: { theme: value }
-    };
+    let updateData = null;
     
-    let updateData = fieldMap[key];
-    if (!updateData && key.includes('_word_')) {
+    if (key === `turk_vocab_${currentUser.uid}_favorites`) {
+      updateData = { favorites: JSON.parse(value || '[]') };
+    } else if (key === `turk_vocab_${currentUser.uid}_mistakes`) {
+      updateData = { mistakes: JSON.parse(value || '[]') };
+    } else if (key === `turk_vocab_${currentUser.uid}_learned`) {
+      updateData = { learnedCount: parseInt(value || '0') };
+    } else if (key === `turk_vocab_${currentUser.uid}_streak`) {
+      updateData = { streak: parseInt(value || '0') };
+    } else if (key === `turk_vocab_${currentUser.uid}_history`) {
+      updateData = { history: JSON.parse(value || '{}') };
+    } else if (key === `turk_vocab_${currentUser.uid}_last_active`) {
+      updateData = { lastActive: value };
+    } else if (key === `turk_vocab_${currentUser.uid}_theme`) {
+      updateData = { theme: value };
+    } else if (key.includes('_word_')) {
       const idx = key.split('_word_')[1];
       updateData = { [`words.${idx}`]: JSON.parse(value || '{}') };
     }
