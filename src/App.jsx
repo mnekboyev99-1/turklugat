@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useAuth } from './contexts/AuthContext'
-import { doc, getDoc, setDoc, deleteDoc } from 'firebase/firestore'
+import { doc, getDoc, setDoc, deleteDoc, onSnapshot } from 'firebase/firestore'
 import { db } from './firebase'
 import LoginScreen from './components/LoginScreen'
 import Flashcard from './components/Flashcard'
@@ -13,11 +13,10 @@ import MatchMode from './components/MatchMode'
 import ResultsScreen from './components/ResultsScreen'
 import StatsModal from './components/StatsModal'
 import WordList from './components/WordList'
-import ReloadPrompt from './components/ReloadPrompt'
-import CrosswordMode from './components/CrosswordMode'
 import ScrambleMode from './components/ScrambleMode'
 import HangmanMode from './components/HangmanMode'
 import AudioDownloader from './components/AudioDownloader'
+import AdminPanel from './components/AdminPanel'
 import defaultWordsData from './data/words.json'
 import './App.css'
 
@@ -25,6 +24,17 @@ function App() {
   const { currentUser, logout } = useAuth();
   
   const [loadingData, setLoadingData] = useState(true);
+  const [appSettings, setAppSettings] = useState({ maintenance: false, announcement: '' });
+
+  useEffect(() => {
+    // Global sozlamalarni tinglash
+    const unsubscribe = onSnapshot(doc(db, 'settings', 'general'), (docSnap) => {
+      if (docSnap.exists()) {
+        setAppSettings(docSnap.data());
+      }
+    });
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     if (!currentUser || currentUser.isGuest) {
@@ -35,6 +45,17 @@ function App() {
     const fetchData = async () => {
       try {
         const docRef = doc(db, 'users', currentUser.uid);
+        
+        // Asosiy ma'lumotlarni yozib qoyish (Admin Panel uchun)
+        const basicInfo = {
+          displayName: currentUser.displayName || 'Foydalanuvchi',
+          email: currentUser.email || 'Noma\'lum',
+          photoURL: currentUser.photoURL || '',
+          lastLogin: new Date().toISOString()
+        };
+        // Orqa fonda ma'lumotlarni yangilab qo'yamiz
+        setDoc(docRef, basicInfo, { merge: true }).catch(console.error);
+
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
           const data = docSnap.data();
@@ -376,8 +397,29 @@ function App() {
     );
   }
 
+  // Texnik ishlar (Maintenance mode)
+  if (appSettings.maintenance && currentUser?.email !== import.meta.env.VITE_ADMIN_EMAIL) {
+    return (
+      <div className="login-screen-container" style={{ textAlign: 'center', padding: '2rem' }}>
+        <h1 style={{ fontSize: '3rem', marginBottom: '1rem' }}>🚧</h1>
+        <h2 style={{ color: 'var(--accent-primary)', marginBottom: '1rem' }}>Texnik ishlar olib borilmoqda</h2>
+        <p style={{ color: 'var(--text-muted)' }}>Ilova faoliyatini yaxshilash maqsadida vaqtinchalik texnik ishlar olib borilmoqda. Iltimos, keyinroq qayta urinib ko'ring.</p>
+      </div>
+    );
+  }
+
   if (words.length === 0) {
     return <div className="app-container">Yuklanmoqda... yoxud ushbu mavzuda so'z topilmadi.</div>;
+  }
+
+  // Maxfiy Admin Panel (Faqat admin uchun)
+  if (window.location.hash === '#maxfiy-admin') {
+    // Agar user admin bo'lmasa, uni o'tkazib yubormaslik
+    if (currentUser?.email === import.meta.env.VITE_ADMIN_EMAIL) {
+      return <AdminPanel onClose={() => window.location.hash = ''} />;
+    } else {
+      window.location.hash = ''; // Adashib kirgan bo'lsa tozalaymiz
+    }
   }
 
   const currentWord = words[currentIndex];
@@ -394,6 +436,11 @@ function App() {
       )}
       
       <header>
+        {appSettings.announcement && (
+          <div style={{ background: 'var(--danger)', color: 'white', padding: '0.8rem', borderRadius: '8px', marginBottom: '1rem', textAlign: 'center', fontWeight: 'bold' }}>
+            📢 {appSettings.announcement}
+          </div>
+        )}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginBottom: '1rem' }}>
           <h1 style={{ margin: 0 }}>Turk Tili Lug'ati</h1>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
