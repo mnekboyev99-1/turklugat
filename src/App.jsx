@@ -37,15 +37,15 @@ function App() {
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
           const data = docSnap.data();
-          if (data.favorites) setLocalAndCloud(`turk_vocab_${currentUser.uid}_favorites`, JSON.stringify(data.favorites));
-          if (data.mistakes) setLocalAndCloud(`turk_vocab_${currentUser.uid}_mistakes`, JSON.stringify(data.mistakes));
-          if (data.learnedCount) setLocalAndCloud(`turk_vocab_${currentUser.uid}_learned`, data.learnedCount.toString());
-          if (data.streak) setLocalAndCloud(`turk_vocab_${currentUser.uid}_streak`, data.streak.toString());
-          if (data.history) setLocalAndCloud(`turk_vocab_${currentUser.uid}_history`, JSON.stringify(data.history));
-          if (data.lastActive) setLocalAndCloud(`turk_vocab_${currentUser.uid}_last_active`, data.lastActive);
+          if (data.favorites) localStorage.setItem(`turk_vocab_${currentUser.uid}_favorites`, JSON.stringify(data.favorites));
+          if (data.mistakes) localStorage.setItem(`turk_vocab_${currentUser.uid}_mistakes`, JSON.stringify(data.mistakes));
+          if (data.learnedCount) localStorage.setItem(`turk_vocab_${currentUser.uid}_learned`, data.learnedCount.toString());
+          if (data.streak) localStorage.setItem(`turk_vocab_${currentUser.uid}_streak`, data.streak.toString());
+          if (data.history) localStorage.setItem(`turk_vocab_${currentUser.uid}_history`, JSON.stringify(data.history));
+          if (data.lastActive) localStorage.setItem(`turk_vocab_${currentUser.uid}_last_active`, data.lastActive);
           if (data.words) {
             Object.keys(data.words).forEach(idx => {
-               setLocalAndCloud(`turk_vocab_${currentUser.uid}_word_${idx}`, JSON.stringify(data.words[idx]));
+               localStorage.setItem(`turk_vocab_${currentUser.uid}_word_${idx}`, JSON.stringify(data.words[idx]));
             });
           }
           
@@ -53,6 +53,23 @@ function App() {
           if (data.mistakes) setMistakes(data.mistakes);
           if (data.learnedCount) setLearnedCount(data.learnedCount);
           if (data.streak) setStreak(data.streak);
+        } else {
+          // Cloud doc doesn't exist. Let's upload existing local data to initialize cloud sync!
+          const localFavs = JSON.parse(localStorage.getItem(`turk_vocab_${currentUser.uid}_favorites`) || '[]');
+          const localMistakes = JSON.parse(localStorage.getItem(`turk_vocab_${currentUser.uid}_mistakes`) || '[]');
+          const localLearned = parseInt(localStorage.getItem(`turk_vocab_${currentUser.uid}_learned`) || '0');
+          const localStreak = parseInt(localStorage.getItem(`turk_vocab_${currentUser.uid}_streak`) || '0');
+          const localHistory = JSON.parse(localStorage.getItem(`turk_vocab_${currentUser.uid}_history`) || '{}');
+          
+          if (localFavs.length > 0 || localMistakes.length > 0 || localLearned > 0) {
+            setDoc(docRef, {
+              favorites: localFavs,
+              mistakes: localMistakes,
+              learnedCount: localLearned,
+              streak: localStreak,
+              history: localHistory
+            }, { merge: true }).catch(console.error);
+          }
         }
       } catch (err) {
         console.error("Error fetching cloud data:", err);
@@ -64,7 +81,7 @@ function App() {
   }, [currentUser]);
 
   const setLocalAndCloud = (key, value) => {
-    setLocalAndCloud(key, value);
+    localStorage.setItem(key, value);
     if (!currentUser || currentUser.isGuest) return;
     
     const fieldMap = {
@@ -90,7 +107,7 @@ function App() {
   };
 
   const removeLocalAndCloud = (key) => {
-    removeLocalAndCloud(key);
+    localStorage.removeItem(key);
     // Complex to delete specific fields in Firestore without updateDoc with deleteField().
     // We will just handle the StatsModal clear all case separately.
   };
