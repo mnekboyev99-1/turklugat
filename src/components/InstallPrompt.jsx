@@ -26,8 +26,14 @@ export default function InstallPrompt() {
     }
 
     // Android / Desktop Chrome uchun
+    if (window.deferredPWAInstallPrompt) {
+      setDeferredPrompt(window.deferredPWAInstallPrompt);
+      setShowPrompt(true);
+    }
+
     const handleBeforeInstallPrompt = (e) => {
       e.preventDefault(); // Brauzer avtomatik o'zini o'rnatish oynasini to'xtatish
+      window.deferredPWAInstallPrompt = e;
       setDeferredPrompt(e);
       setShowPrompt(true);
     };
