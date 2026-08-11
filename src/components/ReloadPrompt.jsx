@@ -24,18 +24,21 @@ function ReloadPrompt() {
   return (
     <div className="ReloadPrompt-container">
       { (offlineReady || needRefresh)
-        && <div className="ReloadPrompt-toast">
-            <div className="ReloadPrompt-message">
-              { offlineReady
-                ? <span>Dastur oflayn ishlashga tayyor!</span>
-                : <span>🔄 Yangi so'zlar/versiya mavjud.</span>
-              }
+        && <>
+            <div className="ReloadPrompt-overlay"></div>
+            <div className="ReloadPrompt-toast">
+              <div className="ReloadPrompt-message">
+                { offlineReady
+                  ? <span>Dastur oflayn ishlashga tayyor! ✅</span>
+                  : <span>🔄 Yangi versiya mavjud! <br/><span style={{fontSize: '0.9rem', fontWeight: 'normal', color: 'var(--text-muted)'}}>Eng so'nggi o'zgarishlarni ko'rish uchun yangilang.</span></span>
+                }
+              </div>
+              <div className="ReloadPrompt-buttons">
+                { needRefresh && <button className="ReloadPrompt-toast-button" onClick={() => updateServiceWorker(true)}>Yangilash</button> }
+                <button className="ReloadPrompt-toast-button close-btn" onClick={() => close()}>Yopish</button>
+              </div>
             </div>
-            <div className="ReloadPrompt-buttons">
-              { needRefresh && <button className="ReloadPrompt-toast-button" onClick={() => updateServiceWorker(true)}>Yangilash</button> }
-              <button className="ReloadPrompt-toast-button close-btn" onClick={() => close()}>Yopish</button>
-            </div>
-          </div>
+           </>
       }
     </div>
   )
