@@ -128,7 +128,8 @@ const LoginScreen = () => {
             marginTop: '0.8rem', 
             background: 'rgba(255,255,255,0.05)',
             border: '1px solid rgba(255,255,255,0.15)',
-            fontSize: '0.95rem'
+            fontSize: '0.95rem',
+            color: '#ffffff'
           }}
         >
           👤 Mehmon sifatida kirish
