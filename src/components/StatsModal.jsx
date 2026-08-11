@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import wordsData from '../data/words.json';
+import { useAuth } from '../contexts/AuthContext';
 
 const TOTAL_WORDS = wordsData.length;
 const VOICES = ['Emel', 'Ahmet'];
 
 export default function StatsModal({ onClose, totalLearned, streak }) {
+  const { currentUser } = useAuth();
   const [data, setData] = useState([]);
   const [confirmReset, setConfirmReset] = useState(false);
 
