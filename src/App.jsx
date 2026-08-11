@@ -1,5 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useAuth } from './contexts/AuthContext'
+import { doc, getDoc, setDoc, deleteDoc } from 'firebase/firestore'
+import { db } from './firebase'
 import LoginScreen from './components/LoginScreen'
 import Flashcard from './components/Flashcard'
 import Controls from './components/Controls'
@@ -20,6 +22,79 @@ import './App.css'
 
 function App() {
   const { currentUser, logout } = useAuth();
+  
+  const [loadingData, setLoadingData] = useState(true);
+
+  useEffect(() => {
+    if (!currentUser || currentUser.isGuest) {
+      setLoadingData(false);
+      return;
+    }
+    
+    const fetchData = async () => {
+      try {
+        const docRef = doc(db, 'users', currentUser.uid);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          if (data.favorites) setLocalAndCloud(`turk_vocab_${currentUser.uid}_favorites`, JSON.stringify(data.favorites));
+          if (data.mistakes) setLocalAndCloud(`turk_vocab_${currentUser.uid}_mistakes`, JSON.stringify(data.mistakes));
+          if (data.learnedCount) setLocalAndCloud(`turk_vocab_${currentUser.uid}_learned`, data.learnedCount.toString());
+          if (data.streak) setLocalAndCloud(`turk_vocab_${currentUser.uid}_streak`, data.streak.toString());
+          if (data.history) setLocalAndCloud(`turk_vocab_${currentUser.uid}_history`, JSON.stringify(data.history));
+          if (data.lastActive) setLocalAndCloud(`turk_vocab_${currentUser.uid}_last_active`, data.lastActive);
+          if (data.words) {
+            Object.keys(data.words).forEach(idx => {
+               setLocalAndCloud(`turk_vocab_${currentUser.uid}_word_${idx}`, JSON.stringify(data.words[idx]));
+            });
+          }
+          
+          if (data.favorites) setFavorites(data.favorites);
+          if (data.mistakes) setMistakes(data.mistakes);
+          if (data.learnedCount) setLearnedCount(data.learnedCount);
+          if (data.streak) setStreak(data.streak);
+        }
+      } catch (err) {
+        console.error("Error fetching cloud data:", err);
+      } finally {
+        setLoadingData(false);
+      }
+    };
+    fetchData();
+  }, [currentUser]);
+
+  const setLocalAndCloud = (key, value) => {
+    setLocalAndCloud(key, value);
+    if (!currentUser || currentUser.isGuest) return;
+    
+    const fieldMap = {
+      [`turk_vocab_${currentUser.uid}_favorites`]: { favorites: JSON.parse(value || '[]') },
+      [`turk_vocab_${currentUser.uid}_mistakes`]: { mistakes: JSON.parse(value || '[]') },
+      [`turk_vocab_${currentUser.uid}_learned`]: { learnedCount: parseInt(value || '0') },
+      [`turk_vocab_${currentUser.uid}_streak`]: { streak: parseInt(value || '0') },
+      [`turk_vocab_${currentUser.uid}_history`]: { history: JSON.parse(value || '{}') },
+      [`turk_vocab_${currentUser.uid}_last_active`]: { lastActive: value },
+      [`turk_vocab_${currentUser.uid}_theme`]: { theme: value }
+    };
+    
+    let updateData = fieldMap[key];
+    if (!updateData && key.includes('_word_')) {
+      const idx = key.split('_word_')[1];
+      updateData = { [`words.${idx}`]: JSON.parse(value || '{}') };
+    }
+    
+    if (updateData) {
+      const docRef = doc(db, 'users', currentUser.uid);
+      setDoc(docRef, updateData, { merge: true }).catch(console.error);
+    }
+  };
+
+  const removeLocalAndCloud = (key) => {
+    removeLocalAndCloud(key);
+    // Complex to delete specific fields in Firestore without updateDoc with deleteField().
+    // We will just handle the StatsModal clear all case separately.
+  };
+
   const [masterData, setMasterData] = useState(defaultWordsData);
   const [words, setWords] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -57,7 +132,7 @@ function App() {
       const newFavs = prev.includes(originalIndex)
         ? prev.filter(i => i !== originalIndex)
         : [...prev, originalIndex];
-      localStorage.setItem(`turk_vocab_${currentUser?.uid || 'guest'}_favorites`, JSON.stringify(newFavs));
+      setLocalAndCloud(`turk_vocab_${currentUser?.uid || 'guest'}_favorites`, JSON.stringify(newFavs));
       return newFavs;
     });
   };
@@ -152,19 +227,19 @@ function App() {
         
         if (diffDays === 1) {
           setStreak(savedStreak + 1);
-          localStorage.setItem(`turk_vocab_${currentUser?.uid || 'guest'}_streak`, (savedStreak + 1).toString());
+          setLocalAndCloud(`turk_vocab_${currentUser?.uid || 'guest'}_streak`, (savedStreak + 1).toString());
         } else if (diffDays > 1) {
           setStreak(1);
-          localStorage.setItem(`turk_vocab_${currentUser?.uid || 'guest'}_streak`, '1');
+          setLocalAndCloud(`turk_vocab_${currentUser?.uid || 'guest'}_streak`, '1');
         }
-        localStorage.setItem(`turk_vocab_${currentUser?.uid || 'guest'}_last_active`, todayStr);
+        setLocalAndCloud(`turk_vocab_${currentUser?.uid || 'guest'}_last_active`, todayStr);
       } else {
         setStreak(savedStreak);
       }
     } else {
       setStreak(1);
-      localStorage.setItem(`turk_vocab_${currentUser?.uid || 'guest'}_streak`, '1');
-      localStorage.setItem(`turk_vocab_${currentUser?.uid || 'guest'}_last_active`, todayStr);
+      setLocalAndCloud(`turk_vocab_${currentUser?.uid || 'guest'}_streak`, '1');
+      setLocalAndCloud(`turk_vocab_${currentUser?.uid || 'guest'}_last_active`, todayStr);
     }
   }, []);
 
@@ -172,10 +247,10 @@ function App() {
     // Theme logic
     if (isDarkMode) {
       document.body.classList.remove('light-mode');
-      localStorage.setItem(`turk_vocab_${currentUser?.uid || 'guest'}_theme`, 'dark');
+      setLocalAndCloud(`turk_vocab_${currentUser?.uid || 'guest'}_theme`, 'dark');
     } else {
       document.body.classList.add('light-mode');
-      localStorage.setItem(`turk_vocab_${currentUser?.uid || 'guest'}_theme`, 'light');
+      setLocalAndCloud(`turk_vocab_${currentUser?.uid || 'guest'}_theme`, 'light');
     }
   }, [isDarkMode]);
 
@@ -185,23 +260,23 @@ function App() {
     if (knewWord) {
       const newCount = learnedCount + 1;
       setLearnedCount(newCount);
-      localStorage.setItem(`turk_vocab_${currentUser?.uid || 'guest'}_learned`, newCount.toString());
+      setLocalAndCloud(`turk_vocab_${currentUser?.uid || 'guest'}_learned`, newCount.toString());
       
       // SRS - remember they knew it
-      localStorage.setItem(`turk_vocab_${currentUser?.uid || 'guest'}_word_${currentWordIndex}`, JSON.stringify({ knew: true, date: Date.now() }));
+      setLocalAndCloud(`turk_vocab_${currentUser?.uid || 'guest'}_word_${currentWordIndex}`, JSON.stringify({ knew: true, date: Date.now() }));
       
       // If they knew it, remove from mistakes if it was there
       if (mistakes.includes(currentWordIndex)) {
         const newMistakes = mistakes.filter(i => i !== currentWordIndex);
         setMistakes(newMistakes);
-        localStorage.setItem(`turk_vocab_${currentUser?.uid || 'guest'}_mistakes`, JSON.stringify(newMistakes));
+        setLocalAndCloud(`turk_vocab_${currentUser?.uid || 'guest'}_mistakes`, JSON.stringify(newMistakes));
       }
 
       // Daily history chart
       const todayStr = new Date().toDateString();
       const historyData = JSON.parse(localStorage.getItem(`turk_vocab_${currentUser?.uid || 'guest'}_history`) || '{}');
       historyData[todayStr] = (historyData[todayStr] || 0) + 1;
-      localStorage.setItem(`turk_vocab_${currentUser?.uid || 'guest'}_history`, JSON.stringify(historyData));
+      setLocalAndCloud(`turk_vocab_${currentUser?.uid || 'guest'}_history`, JSON.stringify(historyData));
       
       setSessionScore(prev => prev + 1);
     } else {
@@ -209,7 +284,7 @@ function App() {
       if (!mistakes.includes(currentWordIndex)) {
         const newMistakes = [...mistakes, currentWordIndex];
         setMistakes(newMistakes);
-        localStorage.setItem(`turk_vocab_${currentUser?.uid || 'guest'}_mistakes`, JSON.stringify(newMistakes));
+        setLocalAndCloud(`turk_vocab_${currentUser?.uid || 'guest'}_mistakes`, JSON.stringify(newMistakes));
       }
     }
     
@@ -251,13 +326,13 @@ function App() {
     }
 
     if (selectedUnit === '⭐ Sevimlilar') {
-      localStorage.removeItem(`turk_vocab_${currentUser?.uid || 'guest'}_favorites`);
+      removeLocalAndCloud(`turk_vocab_${currentUser?.uid || 'guest'}_favorites`);
     } else if (selectedUnit === '❌ Xatolar') {
-      localStorage.removeItem(`turk_vocab_${currentUser?.uid || 'guest'}_mistakes`);
+      removeLocalAndCloud(`turk_vocab_${currentUser?.uid || 'guest'}_mistakes`);
     } else {
       masterData.forEach((w, index) => {
         if (w["Bo'lim (Unit)"] === selectedUnit) {
-          localStorage.removeItem(`turk_vocab_${currentUser?.uid || 'guest'}_word_${index}`);
+          removeLocalAndCloud(`turk_vocab_${currentUser?.uid || 'guest'}_word_${index}`);
         }
       });
     }
@@ -268,6 +343,14 @@ function App() {
 
   if (!currentUser) {
     return <LoginScreen />;
+  }
+
+  if (loadingData && !currentUser.isGuest) {
+    return (
+      <div className="login-screen-container">
+         <h3 style={{color: 'white', marginTop: '20px'}}>Ma'lumotlar serverdan olinmoqda...</h3>
+      </div>
+    );
   }
 
   if (words.length === 0) {

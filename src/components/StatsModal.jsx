@@ -30,7 +30,7 @@ export default function StatsModal({ onClose, totalLearned, streak }) {
     setData(chartData);
   }, []);
 
-  const handleGlobalReset = () => {
+  const handleGlobalReset = async () => {
     if (!confirmReset) {
       setConfirmReset(true);
       setTimeout(() => setConfirmReset(false), 3000);
@@ -44,6 +44,16 @@ export default function StatsModal({ onClose, totalLearned, streak }) {
     
     for (let i = 0; i < TOTAL_WORDS; i++) {
       localStorage.removeItem(`turk_vocab_${currentUser?.uid || 'guest'}_word_${i}`);
+    }
+
+    if (currentUser && !currentUser.isGuest) {
+      try {
+        const { doc, deleteDoc } = await import('firebase/firestore');
+        const { db } = await import('../firebase');
+        await deleteDoc(doc(db, 'users', currentUser.uid));
+      } catch (err) {
+        console.error("Failed to delete cloud data", err);
+      }
     }
     
     setConfirmReset(false);
